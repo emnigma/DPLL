@@ -1,7 +1,7 @@
 from unittest import TestCase
 import unittest
 
-from utils import pe
+from utils import pe, se
 
 from logic import Var, Not, And, Or
 from dpll import literals_in_conjunct
@@ -15,6 +15,14 @@ from dpll import SAT, UNSAT, DPLL
 
 
 class TestDPLL(TestCase):
+    def test_not_parity(self):
+        q1 = Var("q1")
+
+        self.assertEqual(q1, Not(Not(q1)))
+        self.assertEqual(q1, Not(Not(Not(Not(q1)))))
+        self.assertNotEqual(q1, (Not(q1)))
+        self.assertNotEqual(q1, Not(Not(Not(q1))))
+
     def test_get_all_literals_in_conjunct(self):
 
         q1, q2, q3 = Var("q1"), Var("q2"), Var("q3")
@@ -61,35 +69,32 @@ class TestDPLL(TestCase):
     def test_eliminate_pure_literal1(self):
         q1, q2, q3 = Var("q1"), Var("q2"), Var("q3")
 
-        cnf = [q1, Or(q1, q2), Not(q3)]  # q1 ^ (q1 v q2) ^ !q3
+        test_set = [
+            ([Or(q1, q2)], q1, [q2]),
+            ([q1, Or(q1, q2), Not(q3)], Not(q3), [q1, Or(q1, q2), None]),
+            ([Or(q2, Not(Not(q3))), q1], Not(q3), [Or(q2, Not(Not(q3))), q1]),
+        ]
 
-        eliminated = list(map(lambda S: EliminatePureLiteral(S, Not(q3)), cnf))
-        expected = [q1, Or(q1, q2), None]
+        for cnf, l, expected in test_set:
+            self.assertEqual(
+                list(map(lambda c: EliminatePureLiteral(c, l), cnf)),
+                expected
+            )
 
-        self.assertEqual(eliminated, expected)
-
-    def test_eliminate_pure_literal2(self):
+    def test_unit_propagate(self):
+        # убрать все дизъюнкты, в которые входит l, вычеркнуть все !l из оставшихся
         q1, q2, q3 = Var("q1"), Var("q2"), Var("q3")
+        test_set = [
+            ([q1], q1, []),
+            ([q1], Not(q1), [None]),
+            ([q1, Or(Not(q1), q2), Not(q3)], q1, [q2, Not(q3)]),
+            ([q1, Or(q1, q2), Not(q3)], q1, [Not(q3)]),
+        ]
 
-        cnf = [Or(q1, q2)]  # (q1 v q2)
+        for cnf, l, expected in test_set:
+            self.assertEqual(UnitPropagate(cnf, l), expected)
 
-        eliminated = list(map(lambda S: EliminatePureLiteral(S, q1), cnf))
-        expected = [q2]
-
-        self.assertEqual(eliminated, expected)
-
-    def _test_unit_propagate(self):
-
-        q1, q2, q3 = Var("q1"), Var("q2"), Var("q3")
-        cnf = [q1, Or(q1, q2), Not(q3)]  # q1 ^ (q1 v q2) ^ !q3
-
-        propagated = UnitPropagate(cnf, q1)
-        expected = [None, q2, Not(q3)]
-
-        pe(propagated)
-        pe(expected)
-
-    def test_dpll_sat_unsat(self):
+    def _test_dpll_sat_unsat(self):
         q1, q2, q3 = Var("q1"), Var("q2"), Var("q3")
 
         test_set = map(

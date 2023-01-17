@@ -52,11 +52,9 @@ def create_cnf(formula):
 
 def main():
     q1, q2, q3 = Var("q1"), Var("q2"), Var("q3")
-
     formula = Not(And(q1, Or(q2, Not(q3))))
-    
-    for item in create_cnf(formula):
-        pe(item)
+
+    pe(create_cnf(formula))
 
 
 if __name__ == "__main__":
