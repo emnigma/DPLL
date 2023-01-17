@@ -1,6 +1,7 @@
+from typing import Optional
 from logic import Var, Not, Or, And, Proposition
 from utils import pe, se
-from cnf import create_CNF
+from cnf import create_cnf
 
 
 class SAT:
@@ -9,11 +10,8 @@ class SAT:
 
 
 class UNSAT:
-    pass
-
-
-class EmptyDisjunct:
-    pass
+    def __init__(self, S: list[Proposition]) -> None:
+        self.S = S
 
 
 def literals_in_conjunct(conjunct: Proposition) -> list[Var]:
@@ -35,13 +33,13 @@ def literals_in_conjunct(conjunct: Proposition) -> list[Var]:
     return _literals_in_conjunct(conjunct, [])
 
 
-def literal_exists_in_conjunct(literal, conjunct: Proposition) -> bool:
+def literal_exists_in_conjunct(conjunct: Proposition, literal) -> bool:
     return literal in literals_in_conjunct(conjunct)
 
 
-def rm_conjunct_if_contains_literal(literal, S: list[Proposition]) -> list[Proposition]:
+def rm_conjunct_if_contains_literal(S: list[Proposition], literal) -> list[Proposition]:
     def _no_literal_in_conjunct(conjunct):
-        return not literal_exists_in_conjunct(literal, conjunct)
+        return not literal_exists_in_conjunct(conjunct, literal)
 
     return list(filter(_no_literal_in_conjunct, S))
 
@@ -77,18 +75,58 @@ def pure_literals(S: list[Proposition]) -> list[Proposition]:
     return list(map(lambda x: x[0], filter(lambda x: x[1], var_is_pure_dict.items())))
 
 
-def EliminatePureLiteral(S: list[Proposition], l: Proposition) -> list[Proposition]:
-    S.remove(l)
-    return S
+def EliminatePureLiteral(
+    conjunct: Proposition, l: Proposition
+) -> Optional[Proposition]:
+    def _walk_remove(conjunct, l):
+        match conjunct:
+            case Var():
+                if conjunct == l:
+                    return None
+                return conjunct
+
+            case Not(val=p):
+                if p == l.val:
+                    return None
+                return conjunct
+
+            case And(values=(p1, p2)):
+                left = _walk_remove(p1, l)
+                right = _walk_remove(p2, l)
+                match (left, right):
+                    case (None, None):
+                        return None
+                    case (None, _):
+                        return right
+                    case (_, None):
+                        return left
+                    case (Proposition(), Proposition()):
+                        return conjunct
+
+            case Or(values=(p1, p2)):
+                left = _walk_remove(p1, l)
+                right = _walk_remove(p2, l)
+                match (left, right):
+                    case (None, None):
+                        return None
+                    case (None, _):
+                        return right
+                    case (_, None):
+                        return left
+                    case (Proposition(), Proposition()):
+                        return conjunct
+
+    return _walk_remove(conjunct, l)
 
 
 def UnitPropagate(S: list[Proposition], l: Proposition) -> list[Proposition]:
     def _no_literal_in_conjunct(conjunct):
-        return not literal_exists_in_conjunct(l, conjunct)
+        return not literal_exists_in_conjunct(conjunct, l)
 
-    return EliminatePureLiteral(
-        list(filter(_no_literal_in_conjunct, S)), Not(l)
-    )
+    def _eliminate_pure_in_S(S):
+        return EliminatePureLiteral(S, Not(l))
+
+    return list(map(_eliminate_pure_in_S, list(filter(_no_literal_in_conjunct, S))))
 
 
 def ChooseLiteral(S) -> Var:
@@ -99,21 +137,21 @@ def ChooseLiteral(S) -> Var:
 def DPLL(S, M) -> SAT | UNSAT:
     if not S:
         return SAT(M)
-    if EmptyDisjunct in S:
-        return UNSAT
+    if None in S:
+        return UNSAT(S)
 
-    for literal in single_literals(S):
+    for literal in single_literals(S):  # распространение юницикличного дизъюнкта
         S = UnitPropagate(S, literal)
         M[literal] = True
 
     for literal in pure_literals(S):
-        S = rm_conjunct_if_contains_literal(literal, S)
+        S = rm_conjunct_if_contains_literal(S, literal)
         M[literal] = True
 
     if not S:
         return SAT(M)
-    if EmptyDisjunct in S:
-        return UNSAT
+    if None in S:
+        return UNSAT(S)
 
     literal = ChooseLiteral(S)
 
@@ -132,18 +170,23 @@ def DPLL(S, M) -> SAT | UNSAT:
 def main():
     q1, q2, q3 = Var("q1"), Var("q2"), Var("q3")
 
-    formula = Not(Or(q1, And(q2, Not(q3))))
+    # formula = Or(q1, And(q2, q3))
+    formula = And(q1, And(q2, Not(q3)))
     # formula = And(q1, Not(Not(q1)))
-    pe(formula)
-    
-    cnf = create_CNF(formula)
-    pe(cnf)
+    # formula = And(q1, Not(q1))
+    print(f"{se(formula)=}")
 
-    sat = DPLL(cnf, {})
+    cnf = create_cnf(formula)
+    print(f"{se(cnf)=}")
 
-    print(sat.model)
-    for k, v in sat.model.items():
-        print(se(k), v)
+    match DPLL(cnf, {}):
+        case SAT(model=model):
+            print("SAT")
+            for k, v in model.items():
+                print(se(k), "->", v)
+        case UNSAT(S=s):
+            print("UNSAT")
+            pe(s)
 
 
 if __name__ == "__main__":

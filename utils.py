@@ -25,10 +25,13 @@ def se(e):
                 accumulator.append(" v ")
                 _se(p2, accumulator)
                 accumulator.append(")")
+            
+            case None:
+                accumulator.append("□")
         return accumulator
     
     match e:
-        case Proposition():
+        case Proposition() | None:
             return "".join(_se(e, []))
         case [*vals]:
             return " ^ ".join(se(val) for val in vals)

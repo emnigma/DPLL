@@ -24,9 +24,9 @@ def CNF(phi, delta):
             l2, delta2 = CNF(p2, delta1)
             p = Var("p" + get_next_index())
             delta_stroke = delta2 + [
-                Or(Or(l1, l2), Not(p)),
-                Or(Not(l1), p),
-                Or(Not(l2), p),
+                Or(Not(p), l1),
+                Or(Not(p), l2),
+                Or(Or(Not(l1), Not(l2)), p),
             ]
 
             return (p, delta_stroke)
@@ -45,7 +45,7 @@ def CNF(phi, delta):
     raise RuntimeError
 
 
-def create_CNF(formula):
+def create_cnf(formula):
     phi, delta = CNF(formula, [])
     return [phi, *delta]
 
@@ -55,7 +55,7 @@ def main():
 
     formula = Not(And(q1, Or(q2, Not(q3))))
     
-    for item in create_CNF(formula):
+    for item in create_cnf(formula):
         pe(item)
 
 

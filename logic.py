@@ -20,6 +20,12 @@ class Or(Proposition):
     def __hash__(self) -> int:
         return self.values.__hash__()
 
+    def __eq__(self, __o: object) -> bool:
+        if not isinstance(__o, Or):
+            return False
+
+        return set(self.values) == set(__o.values)
+
 
 class And(Proposition):
     def __init__(self, p1, p2) -> None:
@@ -27,6 +33,12 @@ class And(Proposition):
 
     def __hash__(self) -> int:
         return self.values.__hash__()
+
+    def __eq__(self, __o: object) -> bool:
+        if not isinstance(__o, And):
+            return False
+
+        return set(self.values) == set(__o.values)
 
 
 class Not(Proposition):
