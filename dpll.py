@@ -1,5 +1,5 @@
 from typing import Optional
-from logic import Var, Not, Or, And, Proposition
+from logic import Var, Not, Or, And, Proposition, Negate
 from utils import pe, se
 from cnf import create_cnf
 
@@ -52,8 +52,8 @@ def pure_literals(S: list[Proposition]) -> list[Proposition]:
     def _check_pure(conjunct, var_is_pure_dict: dict[Var:bool]) -> None:
         match conjunct:
             case Var():
-                if Not(conjunct) in var_is_pure_dict.keys():
-                    var_is_pure_dict[Not(conjunct)] = False
+                if Negate(conjunct) in var_is_pure_dict.keys():
+                    var_is_pure_dict[Negate(conjunct)] = False
                 else:
                     var_is_pure_dict[conjunct] = True
             case Not(val=p):
@@ -124,7 +124,7 @@ def UnitPropagate(S: list[Proposition], l: Proposition) -> list[Proposition]:
         return not literal_exists_in_conjunct(conjunct, l)
 
     def _eliminate_pure_in_S(S):
-        return EliminatePureLiteral(S, Not(l))
+        return EliminatePureLiteral(S, Negate(l))
 
     return list(map(_eliminate_pure_in_S, list(filter(_no_literal_in_conjunct, S))))
 
@@ -162,7 +162,7 @@ def DPLL(S, M) -> SAT | UNSAT:
     if isinstance(guessed_result, SAT):
         return guessed_result
     else:
-        negative_literal_M = M.copy()
+        negative_literal_M = M.copy()  # potential source of error? TODO: check
         negative_literal_M[literal] = False
         return DPLL([*S, literal], negative_literal_M)
 
@@ -171,8 +171,8 @@ def main():
     q1, q2, q3 = Var("q1"), Var("q2"), Var("q3")
 
     # formula = Or(q1, And(q2, q3))
-    formula = And(q1, And(q2, Not(q3)))
-    # formula = And(q1, Not(Not(q1)))
+    formula = And(q1, And(q2, Negate(q3)))
+    # formula = And(q1, Negate(Negate(q1)))
     # formula = And(q1, Not(q1))
     print(f"{se(formula)=}")
 

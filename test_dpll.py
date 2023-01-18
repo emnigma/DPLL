@@ -3,7 +3,7 @@ import unittest
 
 from utils import pe, se
 
-from logic import Var, Not, And, Or
+from logic import Var, And, Or, Negate as Not
 from dpll import literals_in_conjunct
 from dpll import single_literals
 from dpll import pure_literals
@@ -18,18 +18,18 @@ class TestDPLL(TestCase):
     def test_not_parity(self):
         q1 = Var("q1")
 
-        self.assertEqual(q1, Not(Not(q1)))
-        self.assertEqual(q1, Not(Not(Not(Not(q1)))))
+        self.assertIs(q1, Not(Not(q1)))
+        self.assertIs(q1, Not(Not(Not(Not(q1)))))
         self.assertNotEqual(q1, (Not(q1)))
         self.assertNotEqual(q1, Not(Not(Not(q1))))
 
     def test_get_all_literals_in_conjunct(self):
 
         q1, q2, q3 = Var("q1"), Var("q2"), Var("q3")
-        formula = Not(And(q1, Or(q2, Not(q3))))
+        formula = Not(And(q1, Or(q2, Not(Not(q3)))))
 
         literals = literals_in_conjunct(formula)
-        expected = [q1, q2, Not(q3)]
+        expected = [q1, q2, Not(Not(q3))]
 
         self.assertEqual(set(literals), set(expected))
 

@@ -52,6 +52,7 @@ class Not(Proposition):
         if not (isinstance(other, Not) or isinstance(other, Var)):
             return False
 
+        # TODO: remove, redundant because of Negate()
         reduced_self = reduce(self)
         reduced_other = reduce(other)
 
@@ -67,7 +68,17 @@ class Not(Proposition):
         return self.val.__hash__() + "!".__hash__()
 
 
-def reduce(p: Not) -> Not | Var:
+def Negate(p: Proposition | Not) -> Proposition | Not:
+    match p:
+        case Var():
+            return Not(p)
+        case Not(val=p):
+            return p
+        case _:
+            return p
+
+
+def reduce(p: Not) -> Not | Proposition:
     match p:
         case Var():
             return p
@@ -78,17 +89,15 @@ def reduce(p: Not) -> Not | Var:
                 case Not(val=inner_inner):
                     return reduce(inner_inner)
                 case _:
-                    raise RuntimeError("Wrong proposition met")
+                    return p
 
         case _:
-            raise RuntimeError("Wrong proposition met")
+            return p
 
 
 def main():
     q = Var("q")
-    print(q == q)
-    print(q == Not(Not(q)))
-    # print(reduce(Not(Not(Not(Not(q))))))
+    print(Negate(Negate(Negate(q))) == Negate(q))
 
 
 if __name__ == "__main__":
