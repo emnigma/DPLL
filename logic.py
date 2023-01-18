@@ -77,3 +77,6 @@ def Negate(p: Proposition | Not) -> Proposition | Not:
             return p
         case _:
             return Not(p)
+
+
+Disjunction = list[Proposition]

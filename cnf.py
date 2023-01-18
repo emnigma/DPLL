@@ -1,4 +1,4 @@
-from logic import Proposition, Var, Or, And, Not, Negate
+from logic import Disjunction, Proposition, Var, Or, And, Not, Negate
 
 count = 0
 
@@ -9,9 +9,7 @@ def get_next_index() -> str:
     return str(count)
 
 
-def CNF(
-    phi: Proposition, delta: list[Proposition]
-) -> tuple[Proposition, list[Proposition]]:
+def CNF(phi: Proposition, delta: Disjunction) -> tuple[Var | Not, Disjunction]:
     match phi:
         case Var():
             return (phi, delta)
@@ -46,6 +44,6 @@ def CNF(
     raise RuntimeError
 
 
-def create_cnf(formula: Proposition) -> list[Proposition]:
+def create_cnf(formula: Proposition) -> Disjunction:
     phi, delta = CNF(formula, [])
     return [phi, *delta]

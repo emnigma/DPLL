@@ -3,10 +3,10 @@ import unittest
 from utils import pe, se
 
 from logic import Var, And, Or, Negate as Not
-from dpll import Model, literal_exists_in_conjunct, literals_in_conjunct
+from dpll import Model, literal_exists_in_conjuction, literals_in_conjuction
 from dpll import single_literals
 from dpll import pure_literals
-from dpll import rm_conjunct_if_contains_literal
+from dpll import rm_conjuction_if_contains_literal
 from dpll import EliminatePureLiteral
 from dpll import UnitPropagate
 from cnf import create_cnf
@@ -40,22 +40,22 @@ class TestDPLL(unittest.TestCase):
 
         self.assertEqual(set(cnf), set(expected))
 
-    def test_get_all_literals_in_conjunct(self):
+    def test_get_all_literals_in_conjuction(self):
 
         q1, q2, q3 = Var("q1"), Var("q2"), Var("q3")
         formula = Not(And(q1, Or(q2, Not(Not(q3)))))
 
-        literals = literals_in_conjunct(formula)
+        literals = literals_in_conjuction(formula)
         expected = [q1, q2, Not(Not(q3))]
 
         self.assertEqual(set(literals), set(expected))
 
-    def test_literal_exists_in_conjunct(self):
+    def test_literal_exists_in_conjuction(self):
         q1, q2, q3 = Var("q1"), Var("q2"), Var("q3")
         formula = And(Not(q1), And(Not(Not(q1)), And(Not(Not(Not(q1))), q2)))
 
         existing = map(
-            lambda l: literal_exists_in_conjunct(formula, l), [q1, Not(q1), q2, q3]
+            lambda l: literal_exists_in_conjuction(formula, l), [q1, Not(q1), q2, q3]
         )
         expected = [True, True, True, False]
 
@@ -94,17 +94,17 @@ class TestDPLL(unittest.TestCase):
         for f, expected in test_set:
             self.assertEqual(pure_literals(f), expected)
 
-    def test_rm_conjunct_if_contains_literal(self):
+    def test_rm_conjuction_if_contains_literal(self):
 
         q1, q2, q3 = Var("q1"), Var("q2"), Var("q3")
         c1 = Or(q1, q2)
         c2 = And(Not(q2), Or(q1, q3))
         c3 = And(Not(q1), q2)
 
-        self.assertEqual(rm_conjunct_if_contains_literal([c1, c2, c3], q1), [c3])
-        self.assertEqual(rm_conjunct_if_contains_literal([c1, c2, c3], q2), [c2])
+        self.assertEqual(rm_conjuction_if_contains_literal([c1, c2, c3], q1), [c3])
+        self.assertEqual(rm_conjuction_if_contains_literal([c1, c2, c3], q2), [c2])
         self.assertEqual(
-            rm_conjunct_if_contains_literal([c1, c2, c3], Not(q1)), [c1, c2]
+            rm_conjuction_if_contains_literal([c1, c2, c3], Not(q1)), [c1, c2]
         )
 
     def test_eliminate_pure_literal1(self):

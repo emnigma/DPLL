@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import Optional
-from logic import Var, Not, Or, And, Proposition, Negate
+from logic import Disjunction, Var, Not, Or, And, Proposition, Negate
 from utils import pe, se
 
 
@@ -11,7 +11,7 @@ class SAT:
 
 
 class UNSAT:
-    def __init__(self, S: list[Proposition]) -> None:
+    def __init__(self, S: Disjunction) -> None:
         self.S = S
 
 
@@ -37,37 +37,37 @@ class Model:
             print(k, "->", v)
 
 
-def literals_in_conjunct(conjunct: Proposition) -> list[Var]:
-    def _literals_in_conjunct(conjunct: Proposition, accumulator: set[Proposition]):
-        match conjunct:
+def literals_in_conjuction(conjuction: Proposition) -> list[Var]:
+    def _literals_in_conjuction(conjuction: Proposition, accumulator: set[Proposition]):
+        match conjuction:
             case Var():
-                accumulator.add(conjunct)
+                accumulator.add(conjuction)
             case Not(val=p):
                 if isinstance(p, Var):
-                    accumulator.add(conjunct)
+                    accumulator.add(conjuction)
                 else:
-                    _literals_in_conjunct(p, accumulator)
+                    _literals_in_conjuction(p, accumulator)
             case And(values=(p1, p2)) | Or(values=(p1, p2)):
-                _literals_in_conjunct(p1, accumulator)
-                _literals_in_conjunct(p2, accumulator)
+                _literals_in_conjuction(p1, accumulator)
+                _literals_in_conjuction(p2, accumulator)
 
         return accumulator
 
-    return list(_literals_in_conjunct(conjunct, set()))
+    return list(_literals_in_conjuction(conjuction, set()))
 
 
-def literal_exists_in_conjunct(conjunct: Proposition, literal) -> bool:
-    return literal in literals_in_conjunct(conjunct)
+def literal_exists_in_conjuction(conjuction: Proposition, literal) -> bool:
+    return literal in literals_in_conjuction(conjuction)
 
 
-def rm_conjunct_if_contains_literal(S: list[Proposition], literal) -> list[Proposition]:
-    def _no_literal_in_conjunct(conjunct: Proposition) -> bool:
-        return not literal_exists_in_conjunct(conjunct, literal)
+def rm_conjuction_if_contains_literal(S: Disjunction, literal) -> Disjunction:
+    def _no_literal_in_conjuction(conjuction: Proposition) -> bool:
+        return not literal_exists_in_conjuction(conjuction, literal)
 
-    return list(filter(_no_literal_in_conjunct, S))
+    return list(filter(_no_literal_in_conjuction, S))
 
 
-def single_literals(S: list[Proposition]) -> list[Var]:
+def single_literals(S: Disjunction) -> list[Var | Not]:
     def _is_literal(c: Proposition) -> bool:
         match c:
             case Var():
@@ -80,10 +80,10 @@ def single_literals(S: list[Proposition]) -> list[Var]:
     return list(filter(_is_literal, S))
 
 
-def pure_literals(S: list[Proposition]) -> list[Proposition]:
+def pure_literals(S: Disjunction) -> list[Var | Not]:
     all_literals = set()
     for c in S:
-        for literal in literals_in_conjunct(c):
+        for literal in literals_in_conjuction(c):
             all_literals.add(literal)
 
     pures = set()
@@ -95,19 +95,19 @@ def pure_literals(S: list[Proposition]) -> list[Proposition]:
 
 
 def EliminatePureLiteral(
-    conjunct: Proposition, l: Proposition
+    conjuction: Proposition, l: Proposition
 ) -> Optional[Proposition]:
-    def _walk_remove(conjunct: Proposition, l: Proposition) -> Optional[Proposition]:
-        match conjunct:
+    def _walk_remove(conjuction: Proposition, l: Proposition) -> Optional[Proposition]:
+        match conjuction:
             case Var():
-                if conjunct == l:
+                if conjuction == l:
                     return None
-                return conjunct
+                return conjuction
 
             case Not(val=p):
                 if p == l.val:
                     return None
-                return conjunct
+                return conjuction
 
             case And(values=(p1, p2)):
                 left = _walk_remove(p1, l)
@@ -135,25 +135,25 @@ def EliminatePureLiteral(
                     case (Proposition(), Proposition()):
                         return Or(left, right)
 
-    return _walk_remove(conjunct, l)
+    return _walk_remove(conjuction, l)
 
 
-def UnitPropagate(S: list[Proposition], l: Proposition) -> list[Proposition]:
-    def _no_literal_in_conjunct(conjunct: Proposition) -> bool:
-        return not literal_exists_in_conjunct(conjunct, l)
+def UnitPropagate(S: Disjunction, l: Proposition) -> Disjunction:
+    def _no_literal_in_conjuction(conjuction: Proposition) -> bool:
+        return not literal_exists_in_conjuction(conjuction, l)
 
-    def _eliminate_pure(conjunct: Proposition) -> Optional[Proposition]:
-        return EliminatePureLiteral(conjunct, Negate(l))
+    def _eliminate_pure(conjuction: Proposition) -> Optional[Proposition]:
+        return EliminatePureLiteral(conjuction, Negate(l))
 
-    return list(map(_eliminate_pure, list(filter(_no_literal_in_conjunct, S))))
+    return list(map(_eliminate_pure, list(filter(_no_literal_in_conjuction, S))))
 
 
-def ChooseLiteral(S: list[Proposition]) -> Var:
+def ChooseLiteral(S: Disjunction) -> Var:
     # pick first
-    return literals_in_conjunct(S[0])[0]
+    return literals_in_conjuction(S[0])[0]
 
 
-def DPLL(S: list[Proposition], M: Model) -> SAT | UNSAT:
+def DPLL(S: Disjunction, M: Model) -> SAT | UNSAT:
     if not S:
         return SAT(M)
     if None in S:
@@ -164,7 +164,7 @@ def DPLL(S: list[Proposition], M: Model) -> SAT | UNSAT:
         M.add(literal, True)
 
     for literal in pure_literals(S):
-        S = rm_conjunct_if_contains_literal(S, literal)
+        S = rm_conjuction_if_contains_literal(S, literal)
         M.add(literal, True)
 
     if not S:

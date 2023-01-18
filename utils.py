@@ -1,7 +1,7 @@
-from logic import Var, Or, And, Not, Proposition
+from logic import Disjunction, Var, Or, And, Not, Proposition
 
 
-def se(e: Proposition | list[Proposition]) -> str:
+def se(e: Proposition | Disjunction) -> str:
     def _se(expression, accumulator: list[str]):
         match expression:
             case Var(val=p):
@@ -38,5 +38,5 @@ def se(e: Proposition | list[Proposition]) -> str:
             raise RuntimeError(f"Wrong expression type! Got: {type(e)}")
 
 
-def pe(e):
+def pe(e) -> None:
     print(se(e))
