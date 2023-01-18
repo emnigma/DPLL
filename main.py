@@ -10,7 +10,7 @@ def main():
     formula_from_task3a = Eq(Imp(p, q), Imp(Not(q), Not(p)))
     formula_from_task3b = Eq(Imp(p, Imp(q, r)), Imp(Not(r), Imp(Not(q), Not(p))))
 
-    formula_from_task4 = Not(Imp(Not(And(p, q)), Not(r)))  # !((p ^ q) v !r)
+    formula_from_task4 = Not(Imp(Not(And(p, q)), Not(r)))
 
     def solve(task, formula):
         print(f"### task: {task} ###")
