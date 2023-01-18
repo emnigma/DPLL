@@ -1,7 +1,7 @@
 from logic import Var, Or, And, Not, Negate
 from utils import pe
 
-count = -1
+count = 0
 
 
 def get_next_index():

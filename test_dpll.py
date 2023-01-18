@@ -4,7 +4,7 @@ import unittest
 from utils import pe, se
 
 from logic import Var, And, Or, Negate as Not
-from dpll import literal_exists_in_conjunct, literals_in_conjunct
+from dpll import Model, literal_exists_in_conjunct, literals_in_conjunct
 from dpll import single_literals
 from dpll import pure_literals
 from dpll import rm_conjunct_if_contains_literal
@@ -22,6 +22,24 @@ class TestDPLL(TestCase):
         self.assertIs(q1, Not(Not(Not(Not(q1)))))
         self.assertNotEqual(q1, (Not(q1)))
         self.assertNotEqual(q1, Not(Not(Not(q1))))
+
+    def test_cnf(self):
+        # lecture example
+        q1, q2, q3, p1, p2 = Var("q1"), Var("q2"), Var("q3"), Var("p1"), Var("p2")
+
+        formula = Not(And(q1, Or(q2, Not(q3))))
+        cnf = create_cnf(formula)
+        expected = [
+            Not(p2),
+            Or(Or(q2, Not(q3)), Not(p1)),
+            Or(Not(q2), p1),
+            Or(q3, p1),
+            Or(Not(p2), q1),
+            Or(Not(p2), p1),
+            Or(Or(Not(q1), Not(p1)), p2),
+        ]
+
+        self.assertEqual(set(cnf), set(expected))
 
     def test_get_all_literals_in_conjunct(self):
 
@@ -104,6 +122,15 @@ class TestDPLL(TestCase):
         for cnf, l, expected in test_set:
             self.assertEqual(UnitPropagate(cnf, l), expected)
 
+    def test_model(self):
+        q1, q2 = Var("q1"), Var("q2")
+        m = Model()
+
+        m.add(q1, True)
+        m.add(q2, False)
+
+        self.assertEqual({q1: True, q2: False}, m.inner)
+
     def _test_dpll_sat_unsat(self):
         q1, q2, q3 = Var("q1"), Var("q2"), Var("q3")
 
@@ -112,7 +139,7 @@ class TestDPLL(TestCase):
             [
                 (And(q1, Not(q1)), UNSAT),  # q1 ^ !q1
                 (And(q1, Not(Not(q1))), SAT),  # q1 ^ !!q1
-                (And(q1, And(q2, Not(q3))), SAT)
+                (Not(And(q1, And(q2, Not(q3)))), SAT),  # q1 ^ (q2 ^ !q3)
             ],
         )
 

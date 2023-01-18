@@ -16,6 +16,25 @@ class UNSAT:
         self.S = S
 
 
+class Model:
+    def __init__(self, data={}) -> None:
+        self.inner = data
+
+    def add(self, p: Var | Not, value: bool):
+        match p:
+            case Var():
+                self.inner[p] = value
+            case Not():
+                self.inner[Negate(p)] = not value
+
+    def copy(self) -> Model:
+        return Model(self.inner.copy())
+
+    def pe(self):
+        for k, v in self.inner.items():
+            print(k, "->", v)
+
+
 def literals_in_conjunct(conjunct: Proposition) -> list[Var]:
     def _literals_in_conjunct(conjunct, accumulator):
         match conjunct:
@@ -136,7 +155,7 @@ def ChooseLiteral(S) -> Var:
     return literals_in_conjunct(S[0])[0]
 
 
-def DPLL(S, M) -> SAT | UNSAT:
+def DPLL(S: list[Proposition], M: Model) -> SAT | UNSAT:
     if not S:
         return SAT(M)
     if None in S:
@@ -144,11 +163,11 @@ def DPLL(S, M) -> SAT | UNSAT:
 
     for literal in single_literals(S):  # распространение юницикличного дизъюнкта
         S = UnitPropagate(S, literal)
-        M[literal] = True
+        M.add(literal, True)
 
     for literal in pure_literals(S):
         S = rm_conjunct_if_contains_literal(S, literal)
-        M[literal] = True
+        M.add(literal, True)
 
     if not S:
         return SAT(M)
@@ -158,14 +177,14 @@ def DPLL(S, M) -> SAT | UNSAT:
     literal = ChooseLiteral(S)
 
     positive_literal_M = M.copy()
-    positive_literal_M[literal] = True
+    positive_literal_M.add(literal, True)
 
     guessed_result = DPLL([*S, literal], positive_literal_M)
     if isinstance(guessed_result, SAT):
         return guessed_result
     else:
         negative_literal_M = M.copy()  # potential source of error? TODO: check
-        negative_literal_M[literal] = False
+        negative_literal_M.add(literal, False)
         return DPLL([*S, Negate(literal)], negative_literal_M)
 
 
@@ -173,7 +192,7 @@ def main():
     q1, q2, q3 = Var("q1"), Var("q2"), Var("q3")
 
     # formula = Or(q1, And(q2, q3))
-    formula = And(q1, And(q2, Negate(q3)))
+    formula = Not(And(q1, Or(q2, Negate(q3))))
     # formula = And(q1, Negate(Negate(q1)))
     # formula = And(q1, Not(q1))
     print(f"{se(formula)=}")
@@ -181,11 +200,10 @@ def main():
     cnf = create_cnf(formula)
     print(f"{se(cnf)=}")
 
-    match DPLL(cnf, {}):
+    match DPLL(cnf, Model()):
         case SAT(model=model):
             print("SAT")
-            for k, v in model.items():
-                print(se(k), "->", v)
+            model.pe()
         case UNSAT(S=s):
             print("UNSAT")
             pe(s)

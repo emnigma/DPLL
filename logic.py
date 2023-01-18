@@ -11,6 +11,11 @@ class Var(Proposition):
 
     def __hash__(self) -> int:
         return self.val.__hash__()
+    
+    def __eq__(self, __o: object) -> bool:
+        if not isinstance(__o, Var):
+            return False
+        return self.val == __o.val
 
 
 class Or(Proposition):
@@ -75,7 +80,7 @@ def Negate(p: Proposition | Not) -> Proposition | Not:
         case Not(val=p):
             return p
         case _:
-            return p
+            return Not(p)
 
 
 def reduce(p: Not) -> Not | Proposition:
