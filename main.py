@@ -1,4 +1,4 @@
-from logic import Var, Not, Or, And, Negate as Not, Imp, Eq
+from logic import Var, Or, And, Negate as Not, Imp, Eq
 from utils import se, pe
 from cnf import create_cnf
 from dpll import DPLL, Model, SAT, UNSAT
