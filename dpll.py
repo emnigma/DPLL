@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Optional
 from logic import Disjunction, Var, Not, Or, And, Proposition, Negate
 from utils import pe, se
-
+from cnf import help_var_prefix
 
 class SAT:
     def __init__(self, model: Model) -> None:
@@ -34,7 +34,8 @@ class Model:
 
     def pe(self) -> None:
         for k, v in sorted(self.inner.items(), key=lambda x: x[0].val):
-            print(k, "->", v)
+            if not k.val.startswith(help_var_prefix):
+                print(k, "->", v)
 
 
 def literals_in_conjuction(conjuction: Proposition) -> list[Var]:

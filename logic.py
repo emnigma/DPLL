@@ -79,4 +79,12 @@ def Negate(p: Proposition | Not) -> Proposition | Not:
             return Not(p)
 
 
+def Imp(p1: Proposition, p2: Proposition):
+    return Or(Negate(p1), p2)
+
+
+def Eq(p1, p2):
+    return Or(And(p1, p2), And(Negate(p1), Negate(p2)))
+
+
 Disjunction = list[Proposition]

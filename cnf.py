@@ -1,6 +1,7 @@
 from logic import Disjunction, Proposition, Var, Or, And, Not, Negate
 
 count = 0
+help_var_prefix = "h"
 
 
 def get_next_index() -> str:
@@ -21,7 +22,7 @@ def CNF(phi: Proposition, delta: Disjunction) -> tuple[Var | Not, Disjunction]:
         case And(values=(p1, p2)):
             l1, delta1 = CNF(p1, delta)
             l2, delta2 = CNF(p2, delta1)
-            p = Var("p" + get_next_index())
+            p = Var(help_var_prefix + get_next_index())
             delta_stroke = delta2 + [
                 Or(Negate(p), l1),
                 Or(Negate(p), l2),
@@ -33,7 +34,7 @@ def CNF(phi: Proposition, delta: Disjunction) -> tuple[Var | Not, Disjunction]:
         case Or(values=(p1, p2)):
             l1, delta1 = CNF(p1, delta)
             l2, delta2 = CNF(p2, delta1)
-            p = Var("p" + get_next_index())
+            p = Var(help_var_prefix + get_next_index())
             delta_stroke = delta2 + [
                 Or(Or(l1, l2), Negate(p)),
                 Or(Negate(l1), p),
@@ -46,4 +47,6 @@ def CNF(phi: Proposition, delta: Disjunction) -> tuple[Var | Not, Disjunction]:
 
 def create_cnf(formula: Proposition) -> Disjunction:
     phi, delta = CNF(formula, [])
+    global count
+    count = 0
     return [phi, *delta]

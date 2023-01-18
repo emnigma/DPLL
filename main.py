@@ -1,26 +1,37 @@
-from logic import Var, Not, Or, And, Negate as Not
+from logic import Var, Not, Or, And, Negate as Not, Imp, Eq
 from utils import se, pe
 from cnf import create_cnf
 from dpll import DPLL, Model, SAT, UNSAT
 
 
 def main():
-    q1, q2, q3 = Var("q1"), Var("q2"), Var("q3")
-    formula = Not(And(q1, Or(q2, Not(q3))))  # !(q1 ^ (q2 v !q3))
+    p, q, r = Var("p"), Var("q"), Var("r")
 
-    print(f"{se(formula)=}")
+    formula_from_task3a = Eq(Imp(p, q), Imp(Not(q), Not(p)))
+    formula_from_task3b = Eq(Imp(p, Imp(q, r)), Imp(Not(r), Imp(Not(q), Not(p))))
 
-    cnf = create_cnf(formula)
+    formula_from_task4 = Not(Imp(Not(And(p, q)), Not(r)))  # !((p ^ q) v !r)
 
-    print(f"{se(cnf)=}")
+    def solve(task, formula):
+        print(f"### task: {task} ###")
+        print(f"{se(formula)=}")
 
-    match DPLL(cnf, Model()):
-        case SAT(model=model):
-            print("SAT")
-            model.pe()
-        case UNSAT(S=s):
-            print("UNSAT")
-            pe(s)
+        cnf = create_cnf(formula)
+
+        print(f"{se(cnf)=}")
+
+        match DPLL(cnf, Model()):
+            case SAT(model=model):
+                print("SAT")
+                model.pe()
+            case UNSAT():
+                print("UNSAT")
+        print()
+
+    solve("3a", formula_from_task3a)
+    solve("3a negated", Not(formula_from_task3a))
+    solve("3b", formula_from_task3b)
+    solve("4", formula_from_task4)
 
 
 if __name__ == "__main__":
