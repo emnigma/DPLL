@@ -67,20 +67,33 @@ class TestDPLL(TestCase):
         q1, q2, q3 = Var("q1"), Var("q2"), Var("q3")
         formula = Not(And(q1, Or(q2, Not(q3))))
 
-        singles = single_literals([q1, formula, q3])
-        expected = [q1, q3]
+        singles = single_literals([Not(q1), formula, q3])
+        expected = [Not(q1), q3]
 
         self.assertEqual(set(singles), set(expected))
 
     def test_get_pure_literals(self):
+        a, b, c, d = Var("a"), Var("b"), Var("c"), Var("d")
 
-        q1, q2, q3 = Var("q1"), Var("q2"), Var("q3")
-        formula = Not(And(q1, Or(q2, Not(q3))))
+        test_set = [
+            (
+                [
+                    Or(b, c),
+                    Or(c, d),
+                    Or(c, Not(d)),
+                    Or(Not(c), d),
+                    Or(a, Or(Not(c), Not(d))),
+                    Or(Not(b), Or(Not(c), d)),
+                    Or(Not(a), Or(b, Not(c))),
+                    Or(Not(a), Or(Not(b), c)),
+                ],
+                [],
+            ),
+            ([c, And(b, Not(c)), Not(And(a, Or(Not(b), c))), a], [a]),
+        ]
 
-        single_literals = pure_literals([q3, Not(q2), formula])
-        expected = [q1]
-
-        self.assertEqual(set(single_literals), set(expected))
+        for f, expected in test_set:
+            self.assertEqual(pure_literals(f), expected)
 
     def test_rm_conjunct_if_contains_literal(self):
 
@@ -144,7 +157,27 @@ class TestDPLL(TestCase):
         )
 
         for formula, expected in test_set:
-            self.assertIsInstance(DPLL(formula, {}), expected)
+            self.assertIsInstance(DPLL(formula, Model()), expected)
+
+    def test_lecture_dpll(self):
+        a, b, c, d = Var("a"), Var("b"), Var("c"), Var("d")
+        phi = [
+            Or(Not(a), Or(b, c)),
+            Or(a, Or(c, d)),
+            Or(a, Or(c, Not(d))),
+            Or(a, Or(Not(c), d)),
+            Or(a, Or(Not(c), Not(d))),
+            Or(Not(b), Or(Not(c), d)),
+            Or(Not(a), Or(b, Not(c))),
+            Or(Not(a), Or(Not(b), c)),
+        ]
+
+        pe(phi)
+
+        result = DPLL(phi, Model())
+        self.assertIsInstance(result, SAT)
+
+        self.assertEqual(result.model.inner, {a: True, b: True, c: True, d: True})
 
 
 def main():

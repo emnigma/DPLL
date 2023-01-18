@@ -11,7 +11,7 @@ class Var(Proposition):
 
     def __hash__(self) -> int:
         return self.val.__hash__()
-    
+
     def __eq__(self, __o: object) -> bool:
         if not isinstance(__o, Var):
             return False

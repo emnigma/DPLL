@@ -17,8 +17,11 @@ class UNSAT:
 
 
 class Model:
-    def __init__(self, data={}) -> None:
-        self.inner = data
+    def __init__(self, data=None) -> None:
+        if data == None:
+            self.inner = {}
+        else:
+            self.inner = data
 
     def add(self, p: Var | Not, value: bool):
         match p:
@@ -31,7 +34,7 @@ class Model:
         return Model(self.inner.copy())
 
     def pe(self):
-        for k, v in self.inner.items():
+        for k, v in sorted(self.inner.items(), key=lambda x: x[0].val):
             print(k, "->", v)
 
 
@@ -66,34 +69,30 @@ def rm_conjunct_if_contains_literal(S: list[Proposition], literal) -> list[Propo
 
 
 def single_literals(S: list[Proposition]) -> list[Var]:
-    return list(filter(lambda p: isinstance(p, Var), S))
+    def _is_literal(c: Proposition):
+        match c:
+            case Var():
+                return True
+            case Not(val=p):
+                return isinstance(p, Var)
+            case _:
+                return False
+
+    return list(filter(_is_literal, S))
 
 
 def pure_literals(S: list[Proposition]) -> list[Proposition]:
-    def _check_pure(conjunct, var_is_pure_dict: dict[Var:bool]) -> None:
-        match conjunct:
-            case Var():
-                if Negate(conjunct) in var_is_pure_dict.keys():
-                    var_is_pure_dict[Negate(conjunct)] = False
-                else:
-                    var_is_pure_dict[conjunct] = True
-            case Not(val=p):
-                if isinstance(p, Var):
-                    if p in var_is_pure_dict.keys():
-                        var_is_pure_dict[p] = False
-                    else:
-                        var_is_pure_dict[conjunct] = True
-                else:
-                    _check_pure(p, var_is_pure_dict)
-            case And(values=(p1, p2)) | Or(values=(p1, p2)):
-                _check_pure(p1, var_is_pure_dict)
-                _check_pure(p2, var_is_pure_dict)
+    all_literals = set()
+    for c in S:
+        for literal in literals_in_conjunct(c):
+            all_literals.add(literal)
 
-    var_is_pure_dict: dict[Var:bool] = {}
-    for conjunct in S:
-        _check_pure(conjunct, var_is_pure_dict)
+    pures = set()
+    for literal in all_literals:
+        if not Negate(literal) in all_literals:
+            pures.add(literal)
 
-    return list(map(lambda x: x[0], filter(lambda x: x[1], var_is_pure_dict.items())))
+    return list(pures)
 
 
 def EliminatePureLiteral(
@@ -189,15 +188,31 @@ def DPLL(S: list[Proposition], M: Model) -> SAT | UNSAT:
 
 
 def main():
-    q1, q2, q3 = Var("q1"), Var("q2"), Var("q3")
+    # q1, q2, q3 = Var("q1"), Var("q2"), Var("q3")
 
     # formula = Or(q1, And(q2, q3))
-    formula = Not(And(q1, Or(q2, Negate(q3))))
+    # formula = Not(And(q1, Or(q2, Negate(q3))))  # !(q1 ^ (q2 v !q3))
+    # !q1 v (!q2 ^ q3)
+
     # formula = And(q1, Negate(Negate(q1)))
     # formula = And(q1, Not(q1))
-    print(f"{se(formula)=}")
 
-    cnf = create_cnf(formula)
+    # print(f"{se(formula)=}")
+
+    # cnf = create_cnf(formula)
+
+    a, b, c, d = Var("a"), Var("b"), Var("c"), Var("d")
+    cnf = [
+        Or(Not(a), Or(b, c)),
+        Or(a, Or(c, d)),
+        Or(a, Or(c, Not(d))),
+        Or(a, Or(Not(c), d)),
+        Or(a, Or(Not(c), Not(d))),
+        Or(Not(b), Or(Not(c), d)),
+        Or(Not(a), Or(b, Not(c))),
+        Or(Not(a), Or(Not(b), c)),
+    ]
+
     print(f"{se(cnf)=}")
 
     match DPLL(cnf, Model()):

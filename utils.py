@@ -8,13 +8,8 @@ def se(e):
                 accumulator.append(p)
 
             case Not(val=p):
-                encapsulates_var = isinstance(p, Var)
                 accumulator.append("!")
-                if not encapsulates_var:
-                    accumulator.append("(")
                 _se(p, accumulator)
-                if not encapsulates_var:
-                    accumulator.append(")")
 
             case And(values=(p1, p2)):
                 accumulator.append("(")
@@ -29,11 +24,11 @@ def se(e):
                 accumulator.append(" v ")
                 _se(p2, accumulator)
                 accumulator.append(")")
-            
+
             case None:
                 accumulator.append("□")
         return accumulator
-    
+
     match e:
         case Proposition() | None:
             return "".join(_se(e, []))
@@ -41,7 +36,6 @@ def se(e):
             return " ^ ".join(se(val) for val in vals)
         case _:
             raise RuntimeError("Dummy")
-    
 
 
 def pe(e):
