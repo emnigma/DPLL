@@ -121,7 +121,7 @@ def EliminatePureLiteral(
                     case (_, None):
                         return left
                     case (Proposition(), Proposition()):
-                        return conjunct
+                        return And(left, right)
 
             case Or(values=(p1, p2)):
                 left = _walk_remove(p1, l)
@@ -134,7 +134,7 @@ def EliminatePureLiteral(
                     case (_, None):
                         return left
                     case (Proposition(), Proposition()):
-                        return conjunct
+                        return Or(left, right)
 
     return _walk_remove(conjunct, l)
 

@@ -125,11 +125,13 @@ class TestDPLL(TestCase):
     def test_unit_propagate(self):
         # убрать все дизъюнкты, в которые входит l, вычеркнуть все !l из оставшихся
         q1, q2, q3 = Var("q1"), Var("q2"), Var("q3")
+        a, c, d = Var("a"), Var("c"), Var("d")
         test_set = [
             ([q1], q1, []),
             ([q1], Not(q1), [None]),
             ([q1, Or(Not(q1), q2), Not(q3)], q1, [q2, Not(q3)]),
             ([q1, Or(q1, q2), Not(q3)], q1, [Not(q3)]),
+            ([Or(a, Or(Not(c), d))], c, [Or(a, d)]),
         ]
 
         for cnf, l, expected in test_set:
@@ -171,8 +173,6 @@ class TestDPLL(TestCase):
             Or(Not(a), Or(b, Not(c))),
             Or(Not(a), Or(Not(b), c)),
         ]
-
-        pe(phi)
 
         result = DPLL(phi, Model())
         self.assertIsInstance(result, SAT)
