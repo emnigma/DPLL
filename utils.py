@@ -1,7 +1,7 @@
 from logic import Var, Or, And, Not, Proposition
 
 
-def se(e):
+def se(e: Proposition | list[Proposition]) -> str:
     def _se(expression, accumulator: list[str]):
         match expression:
             case Var(val=p):
@@ -35,7 +35,7 @@ def se(e):
         case [*vals]:
             return " ^ ".join(se(val) for val in vals)
         case _:
-            raise RuntimeError("Dummy")
+            raise RuntimeError(f"Wrong expression type! Got: {type(e)}")
 
 
 def pe(e):

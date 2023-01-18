@@ -53,15 +53,11 @@ class Not(Proposition):
     def __str__(self) -> str:
         return f"!({self.val})"
 
-    def __eq__(self, other: object) -> bool:
-        if not (isinstance(other, Not) or isinstance(other, Var)):
+    def __eq__(self, __o: object) -> bool:
+        if not (isinstance(__o, Not) or isinstance(__o, Var)):
             return False
 
-        # TODO: remove, redundant because of Negate()
-        reduced_self = reduce(self)
-        reduced_other = reduce(other)
-
-        match (reduced_self, reduced_other):
+        match (self, __o):
             case (Var(val=v1), Var(val=v2)):
                 return v1 == v2
             case (Not(val=v1), Not(val=v2)):
@@ -81,29 +77,3 @@ def Negate(p: Proposition | Not) -> Proposition | Not:
             return p
         case _:
             return Not(p)
-
-
-def reduce(p: Not) -> Not | Proposition:
-    match p:
-        case Var():
-            return p
-        case Not(val=inner):
-            match inner:
-                case Var():
-                    return p
-                case Not(val=inner_inner):
-                    return reduce(inner_inner)
-                case _:
-                    return p
-
-        case _:
-            return p
-
-
-def main():
-    q = Var("q")
-    print(Negate(Negate(Negate(q))) == Negate(q))
-
-
-if __name__ == "__main__":
-    main()

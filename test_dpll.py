@@ -1,4 +1,3 @@
-from unittest import TestCase
 import unittest
 
 from utils import pe, se
@@ -14,7 +13,7 @@ from cnf import create_cnf
 from dpll import SAT, UNSAT, DPLL
 
 
-class TestDPLL(TestCase):
+class TestDPLL(unittest.TestCase):
     def test_not_parity(self):
         q1 = Var("q1")
 

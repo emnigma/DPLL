@@ -1,16 +1,17 @@
-from logic import Var, Or, And, Not, Negate
-from utils import pe
+from logic import Proposition, Var, Or, And, Not, Negate
 
 count = 0
 
 
-def get_next_index():
+def get_next_index() -> str:
     global count
     count += 1
     return str(count)
 
 
-def CNF(phi, delta):
+def CNF(
+    phi: Proposition, delta: list[Proposition]
+) -> tuple[Proposition, list[Proposition]]:
     match phi:
         case Var():
             return (phi, delta)
@@ -45,17 +46,6 @@ def CNF(phi, delta):
     raise RuntimeError
 
 
-def create_cnf(formula):
+def create_cnf(formula: Proposition) -> list[Proposition]:
     phi, delta = CNF(formula, [])
     return [phi, *delta]
-
-
-def main():
-    q1, q2, q3 = Var("q1"), Var("q2"), Var("q3")
-    formula = Negate(And(q1, Or(q2, Negate(q3))))
-
-    pe(create_cnf(formula))
-
-
-if __name__ == "__main__":
-    main()
