@@ -4,7 +4,7 @@ import unittest
 from utils import pe, se
 
 from logic import Var, And, Or, Negate as Not
-from dpll import literals_in_conjunct
+from dpll import literal_exists_in_conjunct, literals_in_conjunct
 from dpll import single_literals
 from dpll import pure_literals
 from dpll import rm_conjunct_if_contains_literal
@@ -32,6 +32,17 @@ class TestDPLL(TestCase):
         expected = [q1, q2, Not(Not(q3))]
 
         self.assertEqual(set(literals), set(expected))
+
+    def test_literal_exists_in_conjunct(self):
+        q1, q2, q3 = Var("q1"), Var("q2"), Var("q3")
+        formula = And(Not(q1), And(Not(Not(q1)), And(Not(Not(Not(q1))), q2)))
+
+        existing = map(
+            lambda l: literal_exists_in_conjunct(formula, l), [q1, Not(q1), q2, q3]
+        )
+        expected = [True, True, True, False]
+
+        self.assertEqual(set(existing), set(expected))
 
     def test_get_single_literals(self):
 
@@ -77,8 +88,7 @@ class TestDPLL(TestCase):
 
         for cnf, l, expected in test_set:
             self.assertEqual(
-                list(map(lambda c: EliminatePureLiteral(c, l), cnf)),
-                expected
+                list(map(lambda c: EliminatePureLiteral(c, l), cnf)), expected
             )
 
     def test_unit_propagate(self):
@@ -102,6 +112,7 @@ class TestDPLL(TestCase):
             [
                 (And(q1, Not(q1)), UNSAT),  # q1 ^ !q1
                 (And(q1, Not(Not(q1))), SAT),  # q1 ^ !!q1
+                (And(q1, And(q2, Not(q3))), SAT)
             ],
         )
 

@@ -8,9 +8,13 @@ def se(e):
                 accumulator.append(p)
 
             case Not(val=p):
+                encapsulates_var = isinstance(p, Var)
                 accumulator.append("!")
+                if not encapsulates_var:
+                    accumulator.append("(")
                 _se(p, accumulator)
-                accumulator.append("")
+                if not encapsulates_var:
+                    accumulator.append(")")
 
             case And(values=(p1, p2)):
                 accumulator.append("(")

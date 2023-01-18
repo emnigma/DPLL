@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Optional
 from logic import Var, Not, Or, And, Proposition, Negate
 from utils import pe, se
@@ -18,10 +20,10 @@ def literals_in_conjunct(conjunct: Proposition) -> list[Var]:
     def _literals_in_conjunct(conjunct, accumulator):
         match conjunct:
             case Var():
-                accumulator.append(conjunct)
+                accumulator.add(conjunct)
             case Not(val=p):
                 if isinstance(p, Var):
-                    accumulator.append(conjunct)
+                    accumulator.add(conjunct)
                 else:
                     _literals_in_conjunct(p, accumulator)
             case And(values=(p1, p2)) | Or(values=(p1, p2)):
@@ -30,7 +32,7 @@ def literals_in_conjunct(conjunct: Proposition) -> list[Var]:
 
         return accumulator
 
-    return _literals_in_conjunct(conjunct, [])
+    return list(_literals_in_conjunct(conjunct, set()))
 
 
 def literal_exists_in_conjunct(conjunct: Proposition, literal) -> bool:
@@ -164,7 +166,7 @@ def DPLL(S, M) -> SAT | UNSAT:
     else:
         negative_literal_M = M.copy()  # potential source of error? TODO: check
         negative_literal_M[literal] = False
-        return DPLL([*S, literal], negative_literal_M)
+        return DPLL([*S, Negate(literal)], negative_literal_M)
 
 
 def main():
