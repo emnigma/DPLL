@@ -10,7 +10,7 @@ def get_next_index() -> str:
     return str(count)
 
 
-def CNF(phi: Proposition, delta: Disjunction) -> tuple[Var | Not, Disjunction]:
+def CNF(phi: Proposition, delta: Disjunction) -> tuple[Proposition | Not, Disjunction]:
     match phi:
         case Var():
             return (phi, delta)
