@@ -1,0 +1,113 @@
+manual DPLL:
+### task: k=2, v_size=1 ###
+SAT
+True_var -> True
+z3 solver:
+### task: k=2, v_size=1 ###
+[]
+manual DPLL:
+### task: k=2, v_size=2 ###
+SAT
+e_0_p0_p1 -> True
+e_1_p0_p1 -> False
+z3 solver:
+### task: k=2, v_size=2 ###
+[e_1_p0_p1 = False, e_0_p0_p1 = True]
+manual DPLL:
+### task: k=2, v_size=3 ###
+SAT
+e_0_p0_p1 -> True
+e_0_p0_p2 -> False
+e_0_p1_p2 -> True
+e_1_p0_p1 -> False
+e_1_p0_p2 -> True
+e_1_p1_p2 -> False
+z3 solver:
+### task: k=2, v_size=3 ###
+[e_1_p0_p1 = False,
+ e_1_p1_p2 = False,
+ e_1_p0_p2 = True,
+ e_0_p0_p2 = False,
+ e_0_p0_p1 = True,
+ e_0_p1_p2 = True]
+manual DPLL:
+### task: k=2, v_size=4 ###
+SAT
+e_0_p0_p1 -> False
+e_0_p0_p2 -> True
+e_0_p0_p3 -> False
+e_0_p1_p2 -> True
+e_0_p1_p3 -> True
+e_0_p2_p3 -> False
+e_1_p0_p1 -> True
+e_1_p0_p2 -> False
+e_1_p0_p3 -> True
+e_1_p1_p2 -> False
+e_1_p1_p3 -> False
+e_1_p2_p3 -> True
+z3 solver:
+### task: k=2, v_size=4 ###
+[e_1_p0_p1 = False,
+ e_1_p1_p2 = True,
+ e_1_p2_p3 = False,
+ e_1_p1_p3 = False,
+ e_0_p0_p2 = True,
+ e_0_p0_p1 = True,
+ e_0_p1_p3 = True,
+ e_0_p0_p3 = False,
+ e_1_p0_p2 = False,
+ e_0_p2_p3 = True,
+ e_1_p0_p3 = True,
+ e_0_p1_p2 = False]
+manual DPLL:
+### task: k=2, v_size=5 ###
+SAT
+e_0_p0_p1 -> False
+e_0_p0_p2 -> False
+e_0_p0_p3 -> True
+e_0_p0_p4 -> True
+e_0_p1_p2 -> True
+e_0_p1_p3 -> True
+e_0_p1_p4 -> False
+e_0_p2_p3 -> False
+e_0_p2_p4 -> True
+e_0_p3_p4 -> False
+e_1_p0_p1 -> True
+e_1_p0_p2 -> True
+e_1_p0_p3 -> False
+e_1_p0_p4 -> False
+e_1_p1_p2 -> False
+e_1_p1_p3 -> False
+e_1_p1_p4 -> True
+e_1_p2_p3 -> True
+e_1_p2_p4 -> False
+e_1_p3_p4 -> True
+z3 solver:
+### task: k=2, v_size=5 ###
+[e_1_p0_p1 = True,
+ e_1_p1_p2 = True,
+ e_0_p0_p4 = False,
+ e_1_p1_p3 = False,
+ e_0_p2_p4 = True,
+ e_0_p2_p3 = False,
+ e_0_p1_p2 = False,
+ e_1_p1_p4 = False,
+ e_1_p2_p3 = True,
+ e_1_p0_p4 = True,
+ e_1_p3_p4 = True,
+ e_0_p0_p1 = False,
+ e_0_p1_p3 = True,
+ e_0_p0_p3 = True,
+ e_0_p3_p4 = False,
+ e_0_p1_p4 = True,
+ e_0_p0_p2 = True,
+ e_1_p0_p3 = False,
+ e_1_p0_p2 = False,
+ e_1_p2_p4 = False]
+manual DPLL:
+### task: k=2, v_size=6 ###
+UNSAT  ## очень долго ждать
+z3 solver:
+### task: k=2, v_size=6 ###
+unsat
+5

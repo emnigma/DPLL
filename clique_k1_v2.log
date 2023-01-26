@@ -1,0 +1,21 @@
+manual DPLL:
+### task: k=1, v_size=1 ###
+SAT
+True_var -> True
+z3 solver:
+### task: k=1, v_size=1 ###
+[]
+manual DPLL:
+### task: k=1, v_size=2 ###
+SAT
+e_0_p0_p1 -> True
+z3 solver:
+### task: k=1, v_size=2 ###
+[e_0_p0_p1 = True]
+manual DPLL:
+### task: k=1, v_size=3 ###
+UNSAT
+z3 solver:
+### task: k=1, v_size=3 ###
+unsat
+2
